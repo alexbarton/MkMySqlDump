@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+# mkmysqlslave -- import MySQL master data and start slave
+# Copyright (c)2015 Alexander Barton <alex@barton.de>
+#
+
+NAME=$(basename "$0")
+
+# Defaults
+MYHOST="localhost"
+MYUSER="root"
+MYPW=""
+INFILE=""
+
+Help() {
+	echo "$NAME [<options> ...] <file>"
+	echo
+	echo "  --host|-h <host>"
+	echo "      MySQL server hostname [\"$MYHOST\"]."
+	echo "  --user|-u <user>"
+	echo "      MySQL server user [\"$MYUSER\"]."
+	echo "  --password|-p <password>"
+	echo "      MySQL server password [\"$MYPW\"]".
+	echo
+	echo "  <file>"
+	echo "      Path and name of SQL dump file."
+	echo
+}
+
+Usage() {
+	Help
+	exit 2
+}
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	  "--host"|"-h")
+	  	[ $# -ge 2 ] || Usage
+		MYHOST="$2"
+		shift 2
+		;;
+	  "--user"|"-u")
+		[ $# -ge 2 ] || Usage
+		MYHOST="$2"
+		shift 2
+		;;
+	  "--password"|"-p")
+		[ $# -ge 2 ] || Usage
+		MYPW="$2"
+		shift 2
+		;;
+	  "--help")
+	  	Help
+		exit 0
+		;;
+	  *)
+		[ $# -eq 1 ] || Usage
+		INFILE="$1"
+		break
+	esac
+done
+
+if [ -z "$INFILE" -o ! -n "$INFILE" ]; then
+	Usage
+fi
+if [ ! -r "$INFILE" ]; then
+	echo "$NAME: Can't read \"$INFILE\"!"
+	exit 1
+fi
+
+echo "Initializing MySQL server on \"$MYHOST\" (user \"$MYUSER\") as replication slave:"
+
+[ -n "$MYPW" ] && PWSWITCH="--password='$MYPW'" || PWSWITCH=""
+
+echo "Stopping running slave threads ..."
+mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH -e 'stop slave'; r=$?
+if [ $r -ne 0 ]; then
+	echo "Warning: FAILED to stop MySQL slave threads, code $r!" >&2
+fi
+
+echo "Importing \"$INFILE\" ..."
+echo "Start: $(date)"
+mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH <"$INFILE"; r=$?
+echo "End: $(date)"
+if [ $r -ne 0 ]; then
+	echo "MySQL import FAILED, code $r!" >&2
+	exit $r
+fi
+
+echo "Starting slave threads ..."
+mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH -e 'start slave'; r=$?
+if [ $r -ne 0 ]; then
+	echo "FAILED to start MySQL slave threads, code $r!" >&2
+	exit $r
+fi
+
+echo "MySQL slave initialized."
+exit 0

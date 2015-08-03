@@ -1,0 +1,121 @@
+#!/bin/sh
+#
+# mkmysqldump -- dump MySQL (master) data
+# Copyright (c)2015 Alexander Barton <alex@barton.de>
+#
+
+NAME=$(basename "$0")
+
+# Defaults
+MYHOST="localhost"
+MYUSER="root"
+MYPW=""
+OUTFILE="$(hostname -s)-$(date "+%Y%m%d-%H%M%S").sql"
+STATS=""
+
+Help() {
+	echo "$NAME [<options> ...]"
+	echo
+	echo "  --host|-h <host>"
+	echo "      MySQL server hostname [\"$MYHOST\"]."
+	echo "  --user|-u <user>"
+	echo "      MySQL server user [\"$MYUSER\"]."
+	echo "  --password|-p <password>"
+	echo "      MySQL server password [\"$MYPW\"]".
+	echo "  --outfile|-o <file>"
+	echo "      Path and name of SQL dump file [\"$OUTFILE\"]."
+	echo "  --summary|-s"
+	echo "      Display file and file system status summary."
+	echo
+}
+
+Usage() {
+	Help
+	exit 2
+}
+
+for cmd in mysql mysqldump; do
+	if ! which "$cmd" >/dev/null 2>&1; then
+		echo "$NAME: \"$cmd\" command not found!"
+		exit 1
+	fi
+done
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	  "--host"|"-h")
+	  	[ $# -ge 2 ] || Usage
+		MYHOST="$2"
+		shift 2
+		;;
+	  "--user"|"-u")
+		[ $# -ge 2 ] || Usage
+		MYHOST="$2"
+		shift 2
+		;;
+	  "--password"|"-p")
+		[ $# -ge 2 ] || Usage
+		MYPW="$2"
+		shift 2
+		;;
+	  "--outfile"|"-o")
+		[ $# -ge 2 ] || Usage
+		OUTFILE="$2"
+		shift 2
+		;;
+	  "--summary"|"-s")
+		STATS=1
+		shift
+		;;
+	  "--help")
+	  	Help
+		exit 0
+		;;
+	  *)
+		Usage
+	esac
+done
+
+echo "Dumping MySQL server on \"$MYHOST\" (user \"$MYUSER\"):"
+umask 0077
+
+[ -n "$MYPW" ] && PWSWITCH="--password='$MYPW'" || PWSWITCH=""
+
+echo "Getting list of databases from server ..."
+DATABASES=$(
+	mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH -e 'show databases' \
+	 | grep "^\| " | cut -d' ' -f2 | grep -v "Database" \
+	 | grep -v "information_schema" | grep -v "mysql"
+)
+if [ $? -ne 0 ]; then
+	echo "Failed to get list of databases! Aborting!"
+	exit 1
+fi
+
+echo "Dumping SQL data to file \"$OUTFILE\" ..."
+CMD="mysqldump \
+	-h $MYHOST \
+	-u $MYUSER \
+	$PWSWITCH \
+	--single-transaction \
+	--databases $DATABASES"
+
+echo "Start: $(date)"
+echo $CMD
+$CMD >"$OUTFILE"; r=$?
+echo "End: $(date)"
+
+[ $r -eq 0 ] \
+	&& echo "Dump command exited with code 0, success." \
+	|| echo "Dump command FAILED with code $r!" >&2
+
+if [ -e "$OUTFILE" -a -n "$STATS" ]; then
+	echo
+	echo "SQL dump file"
+	ls -lh "$OUTFILE"
+	echo
+	df -h "$OUTFILE"
+	echo
+fi
+
+exit $r
