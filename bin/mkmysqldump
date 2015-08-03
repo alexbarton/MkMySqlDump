@@ -24,6 +24,8 @@ Help() {
 	echo "      MySQL server password [\"$MYPW\"]".
 	echo "  --outfile|-o <file>"
 	echo "      Path and name of SQL dump file [\"$OUTFILE\"]."
+	echo "  --outdir|-d <directory>"
+	echo "      Directory for automatically named dump files."
 	echo "  --summary|-s"
 	echo "      Display file and file system status summary."
 	echo
@@ -61,6 +63,11 @@ while [ $# -gt 0 ]; do
 	  "--outfile"|"-o")
 		[ $# -ge 2 ] || Usage
 		OUTFILE="$2"
+		shift 2
+		;;
+	  "--outdir"|"-d")
+		[ $# -ge 2 ] || Usage
+		OUTFILE="$2/$(hostname -s)-$(date "+%Y%m%d-%H%M%S").sql"
 		shift 2
 		;;
 	  "--summary"|"-s")
