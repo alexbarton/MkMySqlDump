@@ -43,6 +43,12 @@ Usage() {
 	exit 2
 }
 
+ErrorNotice() {
+	echo
+	echo "----->  THERE HAVE BEEN ERRORS!  <-----"
+	echo
+}
+
 for cmd in mysql mysqldump; do
 	if ! which "$cmd" >/dev/null 2>&1; then
 		echo "$NAME: \"$cmd\" command not found!"
@@ -118,6 +124,7 @@ DATABASES=$(
 )
 if [ $? -ne 0 ]; then
 	echo "Failed to get list of databases! Aborting!"
+	ErrorNotice
 	exit 1
 fi
 
@@ -150,9 +157,12 @@ if [ -n "$STATS" ]; then
 	echo
 fi
 
-[ $r -eq 0 ] \
-	&& echo "Dump command exited with code 0, success." \
-	|| echo "Dump command FAILED with code $r!" >&2
+if [ $r -eq 0 ]; then
+	echo "Dump command exited with code 0, success."
+else
+	echo "Dump command FAILED with code $r!" >&2
+	ErrorNotice
+fi
 
 echo
 exit $r
