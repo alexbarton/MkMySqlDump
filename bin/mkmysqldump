@@ -92,7 +92,9 @@ echo "Getting list of databases from server ..."
 DATABASES=$(
 	mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH -e 'show databases' \
 	 | grep "^\| " | cut -d' ' -f2 | grep -v "Database" \
-	 | grep -v "information_schema" | grep -v "mysql"
+	 | grep -v "information_schema" \
+	 | grep -v "performance_schema" \
+	 | grep -v "mysql"
 )
 if [ $? -ne 0 ]; then
 	echo "Failed to get list of databases! Aborting!"
