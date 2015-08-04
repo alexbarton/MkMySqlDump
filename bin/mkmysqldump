@@ -106,7 +106,7 @@ CMD="mysqldump \
 	-h $MYHOST \
 	-u $MYUSER \
 	$PWSWITCH \
-	--single-transaction \
+	--lock-all-tables \
 	--databases $DATABASES"
 
 echo "Start: $(date)"
