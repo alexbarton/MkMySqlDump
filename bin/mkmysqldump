@@ -12,6 +12,7 @@ MYUSER="root"
 MYPW=""
 OUTFILE="$(hostname -s)-$(date "+%Y%m%d-%H%M%S").sql"
 STATS=""
+COMPRESS=""
 
 Help() {
 	echo "$NAME [<options> ...]"
@@ -28,6 +29,12 @@ Help() {
 	echo "      Directory for automatically named dump files."
 	echo "  --summary|-s"
 	echo "      Display file and file system status summary."
+	echo "  --gzip"
+	echo "      Compress SQL dump file using gzip(1)"
+	echo "  --bzip2"
+	echo "      Compress SQL dump file using bzip2(1)"
+	echo "  --xz"
+	echo "      Compress SQL dump file using xz(1)"
 	echo
 }
 
@@ -69,6 +76,18 @@ while [ $# -gt 0 ]; do
 		[ $# -ge 2 ] || Usage
 		OUTFILE="$2/$(hostname -s)-$(date "+%Y%m%d-%H%M%S").sql"
 		shift 2
+		;;
+	  "--gzip")
+		COMPRESS="gzip -v"
+		shift
+		;;
+	  "--bzip2")
+		COMPRESS="bzip2 -v"
+		shift
+		;;
+	  "--xz")
+		COMPRESS="xz -v"
+		shift
 		;;
 	  "--summary"|"-s")
 		STATS=1
@@ -113,14 +132,21 @@ CMD="mysqldump \
 echo "Start date: $(date)"
 echo $CMD
 $CMD >"$OUTFILE"; r=$?
+if [ -n "$COMPRESS" -a -s "$OUTFILE" -a $r -eq 0 ]; then
+	echo "Dump done: $(date)"
+	echo "Compressing dump file ($COMPRESS) ..."
+	$COMPRESS "$OUTFILE"
+fi
 echo "End: $(date)"
 echo
 
-if [ -e "$OUTFILE" -a -n "$STATS" ]; then
+if [ -n "$STATS" ]; then
 	echo "SQL dump file"
-	ls -lh "$OUTFILE"
+	for f in "$OUTFILE"*; do
+		ls -lh "$f"*
+	done
 	echo
-	df -h "$OUTFILE"
+	df -h "$(dirname "$OUTFILE")"
 	echo
 fi
 
