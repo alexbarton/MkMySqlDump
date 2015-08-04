@@ -84,6 +84,7 @@ while [ $# -gt 0 ]; do
 done
 
 echo "Dumping MySQL server on \"$MYHOST\" (user \"$MYUSER\"):"
+echo "Started: $(date)"
 umask 0077
 
 [ -n "$MYPW" ] && PWSWITCH="--password='$MYPW'" || PWSWITCH=""
@@ -110,17 +111,13 @@ CMD="mysqldump \
 	--master-data=1 \
 	--databases $DATABASES"
 
-echo "Start: $(date)"
+echo "Start date: $(date)"
 echo $CMD
 $CMD >"$OUTFILE"; r=$?
 echo "End: $(date)"
-
-[ $r -eq 0 ] \
-	&& echo "Dump command exited with code 0, success." \
-	|| echo "Dump command FAILED with code $r!" >&2
+echo
 
 if [ -e "$OUTFILE" -a -n "$STATS" ]; then
-	echo
 	echo "SQL dump file"
 	ls -lh "$OUTFILE"
 	echo
@@ -128,4 +125,9 @@ if [ -e "$OUTFILE" -a -n "$STATS" ]; then
 	echo
 fi
 
+[ $r -eq 0 ] \
+	&& echo "Dump command exited with code 0, success." \
+	|| echo "Dump command FAILED with code $r!" >&2
+
+echo
 exit $r
