@@ -107,7 +107,6 @@ CMD="mysqldump \
 	-h $MYHOST \
 	-u $MYUSER \
 	$PWSWITCH \
-	--lock-all-tables \
 	--master-data=1 \
 	--databases $DATABASES"
 
