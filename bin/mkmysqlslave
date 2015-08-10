@@ -60,10 +60,10 @@ while [ $# -gt 0 ]; do
 	esac
 done
 
-if [ -z "$INFILE" -o ! -n "$INFILE" ]; then
+if [ -z "$INFILE" ]; then
 	Usage
 fi
-if [ ! -r "$INFILE" ]; then
+if [ ! -r "$INFILE" -a "$INFILE" != "-" ]; then
 	echo "$NAME: Can't read \"$INFILE\"!"
 	exit 1
 fi
@@ -78,9 +78,14 @@ if [ $r -ne 0 ]; then
 	echo "Warning: FAILED to stop MySQL slave threads, code $r!" >&2
 fi
 
-echo "Importing \"$INFILE\" ..."
 echo "Start: $(date)"
-mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH <"$INFILE"; r=$?
+if [ "$INFILE" != "-" ]; then
+	echo "Importing \"$INFILE\" ..."
+	mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH <"$INFILE"; r=$?
+else
+	echo "Importing from standard input ..."
+	mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH; r=$?
+fi
 echo "End: $(date)"
 if [ $r -ne 0 ]; then
 	echo "MySQL import FAILED, code $r!" >&2
