@@ -128,16 +128,19 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
+echo "Will dump the following databases:"
+for d in $DATABASES; do
+	echo " - $d"
+done
+
 echo "Dumping SQL data to file \"$OUTFILE\" ..."
+echo "Start date: $(date)"
 CMD="mysqldump \
 	-h $MYHOST \
 	-u $MYUSER \
 	$PWSWITCH \
 	--master-data=1 \
 	--databases $DATABASES"
-
-echo "Start date: $(date)"
-echo $CMD
 $CMD >"$OUTFILE"; r=$?
 if [ -n "$COMPRESS" -a -s "$OUTFILE" -a $r -eq 0 ]; then
 	echo "Dump done: $(date)"
