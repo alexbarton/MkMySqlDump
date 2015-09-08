@@ -115,7 +115,9 @@ while [ $# -gt 0 ]; do
 done
 
 echo "Dumping MySQL server on \"$MYHOST\" (user \"$MYUSER\"):"
+echo
 echo "Started: $(date)"
+
 umask 0077
 
 [ -n "$MYPW" ] && PWSWITCH="--password='$MYPW'" || PWSWITCH=""
@@ -155,7 +157,7 @@ for d in $DATABASES; do
 done
 
 echo "Dumping SQL data to file \"$OUTFILE\" ..."
-echo "Start date: $(date)"
+echo "Beginning dump: $(date)"
 CMD="mysqldump \
 	-h $MYHOST \
 	-u $MYUSER \
