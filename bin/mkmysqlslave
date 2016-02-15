@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # mkmysqlslave -- import MySQL master data and start slave
-# Copyright (c)2015 Alexander Barton <alex@barton.de>
+# Copyright (c)2015-2016 Alexander Barton <alex@barton.de>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,11 +87,11 @@ fi
 echo "Start: $(date)"
 if [ "$INFILE" != "-" ]; then
 	echo "Importing \"$INFILE\" ..."
-	mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH <"$INFILE"; r=$?
 else
 	echo "Importing from standard input ..."
-	mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH; r=$?
 fi
+( echo "SET SESSION SQL_LOG_BIN=0;"; cat "$INFILE" ) \
+	| mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH; r=$?
 echo "End: $(date)"
 if [ $r -ne 0 ]; then
 	echo "MySQL import FAILED, code $r!" >&2
