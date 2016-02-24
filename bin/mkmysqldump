@@ -71,7 +71,7 @@ while [ $# -gt 0 ]; do
 		;;
 	  "--user"|"-u")
 		[ $# -ge 2 ] || Usage
-		MYHOST="$2"
+		MYUSER="$2"
 		shift 2
 		;;
 	  "--password"|"-p")
