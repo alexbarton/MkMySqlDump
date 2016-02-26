@@ -185,10 +185,10 @@ fi
 
 if [ $r -eq 0 ]; then
 	echo "Dump command exited with code 0, success."
+	echo
 else
 	echo "Dump command FAILED with code $r!" >&2
 	ErrorNotice
 fi
 
-echo
 exit $r
