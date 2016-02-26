@@ -120,7 +120,7 @@ echo "Started: $(date)"
 
 umask 0077
 
-[ -n "$MYPW" ] && PWSWITCH="--password='$MYPW'" || PWSWITCH=""
+[ -n "$MYPW" ] && PWSWITCH="--password=$MYPW" || PWSWITCH=""
 
 echo "Getting list of databases from server ..."
 DATABASES=$(

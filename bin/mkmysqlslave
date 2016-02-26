@@ -76,7 +76,7 @@ fi
 
 echo "Initializing MySQL server on \"$MYHOST\" (user \"$MYUSER\") as replication slave:"
 
-[ -n "$MYPW" ] && PWSWITCH="--password='$MYPW'" || PWSWITCH=""
+[ -n "$MYPW" ] && PWSWITCH="--password=$MYPW" || PWSWITCH=""
 
 echo "Stopping running slave threads ..."
 mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH -e 'stop slave'; r=$?
