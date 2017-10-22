@@ -168,7 +168,8 @@ $CMD >"$OUTFILE"; r=$?
 if [ -n "$COMPRESS" -a -s "$OUTFILE" -a $r -eq 0 ]; then
 	echo "Dump done: $(date)"
 	echo "Compressing dump file ($COMPRESS) ..."
-	$COMPRESS "$OUTFILE"
+	$COMPRESS "$OUTFILE" 2>&1
+	[ $? -eq 0 ] || echo "Error compressing dump file!" >&2
 fi
 echo "End: $(date)"
 echo
