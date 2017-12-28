@@ -55,6 +55,11 @@ ErrorNotice() {
 	echo
 }
 
+# Make sure the environment is "sane", for example, mysql(1) depends on the
+# HOME environment variable to be set.
+[ -n "$HOME" ] || HOME=$( getent passwd "${LOGNAME:-root}" | cut -d: -f6 )
+export HOME
+
 for cmd in mysql mysqldump; do
 	if ! which "$cmd" >/dev/null 2>&1; then
 		echo "$NAME: \"$cmd\" command not found!"
