@@ -143,7 +143,7 @@ fi
 
 echo "Checking slave status ..."
 Slave_IO_Running=""; Slave_SQL_Running=""
-eval "$(echo 'SHOW SLAVE STATUS\G' | mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH | sed -n '/Running/p' | sed 's/: /=/g')"
+eval "$(echo 'SHOW SLAVE STATUS\G' | mysql -h "$MYHOST" -u "$MYUSER" $PWSWITCH | sed -n '/Running:/p' | sed 's/: /=/g')"
 if [ -n "$Slave_IO_Running" -o -n "$Slave_SQL_Running" ]; then
 	if [ "$Slave_IO_Running" = "Yes" -a "$Slave_SQL_Running" = "Yes" ]; then
 		echo "Server is running as MySQL slave, replication is Ok."
